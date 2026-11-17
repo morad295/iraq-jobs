@@ -1,0 +1,32 @@
+{
+  "name": "منصة توظيف المطاعم - العراق",
+  "short_name": "وظائف المطاعم",
+  "description": "أسرع تطبيق للتوظيف في قطاع المطاعم والكافيهات في العراق. تواصل مباشرة مع أصحاب العمل أو انشر شاغرك الوظيفي مجاناً.",
+  "id": "https://morad295.github.io/iraq-jobs/",
+  "start_url": "https://morad295.github.io/iraq-jobs/index.html",
+  "scope": "https://morad295.github.io/iraq-jobs/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#020617",
+  "theme_color": "#0f172a",
+  "dir": "rtl",
+  "lang": "ar",
+  "categories": [
+    "business",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "https://morad295.github.io/iraq-jobs/icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://morad295.github.io/iraq-jobs/icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
