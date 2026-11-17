@@ -462,7 +462,29 @@
             renderJobs();
             updateUnreadNotifBadge();
             checkNotificationPermissionUI();
+            registerAppServiceWorker();
         };
+
+        // تسجيل Service Worker وتفعيل الإشعارات في متصفح كروم والجوال
+        function registerAppServiceWorker() {
+            if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.register('sw.js')
+                    .then((registration) => {
+                        console.log('تم تسجيل Service Worker بنجاح:', registration.scope);
+                        if ('Notification' in window && Notification.permission === 'default') {
+                            Notification.requestPermission().then((permission) => {
+                                if (permission === 'granted') {
+                                    checkNotificationPermissionUI();
+                                    showToast('✅ تم تفعيل إشعارات الجوال والمتصفح!');
+                                }
+                            });
+                        }
+                    })
+                    .catch((error) => {
+                        console.log('فشل تسجيل Service Worker:', error);
+                    });
+            }
+        }
 
         document.getElementById('authForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -885,10 +907,23 @@
         function sendDeviceNotification(title, body) {
             if ('Notification' in window && Notification.permission === 'granted') {
                 try {
-                    new Notification(title, {
-                        body: body,
-                        icon: 'k.png'
-                    });
+                    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+                        navigator.serviceWorker.ready.then(registration => {
+                            registration.showNotification(title, {
+                                body: body,
+                                icon: 'k.png',
+                                badge: 'k.png',
+                                dir: 'rtl',
+                                lang: 'ar',
+                                vibrate: [200, 100, 200]
+                            });
+                        });
+                    } else {
+                        new Notification(title, {
+                            body: body,
+                            icon: 'k.png'
+                        });
+                    }
                 } catch(e) {
                     console.error(e);
                 }
