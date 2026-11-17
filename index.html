@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>منصة توظيف المطاعم - العراق</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Cairo', sans-serif; -webkit-tap-highlight-color: transparent; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24 selection:bg-amber-500 selection:text-slate-950">
+
+    <!-- شاشة التحميل (Splash Screen) -->
+    <div id="splashScreen" class="fixed inset-0 bg-slate-950 z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-20 h-20 rounded-3xl bg-gradient-to-tr from-amber-500 to-orange-600 flex items-center justify-center shadow-2xl shadow-amber-500/20 mb-4 animate-bounce">
+            <i class="fa-solid fa-utensils text-3xl text-slate-950"></i>
+        </div>
+        <h1 class="text-2xl font-black text-white tracking-wide">وظائف المطاعم</h1>
+        <p class="text-xs text-amber-400 mt-1">منصة التوظيف الأولى في العراق</p>
+    </div>
+
+    <!-- شاشة تسجيل الدخول الإجبارية -->
+    <div id="authModal" class="fixed inset-0 bg-slate-950/95 backdrop-blur-md z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="text-center space-y-1">
+                <div class="w-14 h-14 bg-amber-500/10 text-amber-400 rounded-2xl flex items-center justify-center mx-auto mb-2 text-2xl">
+                    <i class="fa-solid fa-user-check"></i>
+                </div>
+                <h2 class="text-xl font-black text-white">تسجيل الدخول للمنصة</h2>
+                <p class="text-xs text-slate-400">سجل بياناتك مرة واحدة للمتابعة وتصفح الوظائف</p>
+            </div>
+
+            <div id="authError" class="hidden bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs p-3 rounded-xl text-center font-semibold"></div>
+
+            <form id="authForm" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1.5">نوع الحساب:</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="accountType" value="seeker" checked class="peer hidden">
+                            <div class="text-center py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-slate-400 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-checked:text-amber-400 transition">
+                                <i class="fa-solid fa-user-tie ml-1"></i> باحث عن عمل
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="accountType" value="owner" class="peer hidden">
+                            <div class="text-center py-2.5 rounded-xl border border-slate-800 bg-slate-950 text-xs font-bold text-slate-400 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-checked:text-amber-400 transition">
+                                <i class="fa-solid fa-store ml-1"></i> صاحب مطعم
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">الاسم الثلاثي:</label>
+                    <input type="text" id="regName" required placeholder="مثال: محمد علي حسن" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-amber-500 outline-none">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف العراقي (11 رقم):</label>
+                    <input type="tel" id="regPhone" required placeholder="07XXXXXXXXX" dir="ltr" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white text-right focus:border-amber-500 outline-none">
+                </div>
+
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3.5 rounded-xl text-sm transition shadow-lg shadow-amber-500/20">
+                    دخول المنصة الآن
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- الشريط العلوي -->
+    <header class="sticky top-0 z-30 bg-slate-950/90 backdrop-blur-md border-b border-slate-800/80 px-4 py-3">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-amber-500 flex items-center justify-center text-slate-950 font-black shadow-md">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div>
+                    <h1 class="text-sm font-black text-white leading-tight">وظائف المطاعم</h1>
+                    <span id="userBadge" class="text-[10px] text-amber-400 font-semibold">أهلاً بك</span>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+                <button id="ownerPostBtn" onclick="openPostJobModal()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1 shadow">
+                    <i class="fa-solid fa-plus"></i> نشر وظيفة
+                </button>
+                <button id="ownerAppsBtn" onclick="openApplicationsModal()" class="hidden bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold px-3 py-2 rounded-xl transition flex items-center gap-1 shadow">
+                    <i class="fa-solid fa-inbox"></i> الطلبات
+                </button>
+                <button onclick="openSettingsModal()" class="relative w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-amber-400 flex items-center justify-center text-xs transition" title="الإعدادات">
+                    <i class="fa-solid fa-gear"></i>
+                    <span id="notifBadge" class="hidden absolute -top-1 -right-1 w-4 h-4 bg-rose-500 text-white text-[9px] font-black rounded-full flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="max-w-3xl mx-auto p-4 space-y-4">
+        <!-- شريط البحث والتصفية -->
+        <div class="space-y-3">
+            <div class="relative">
+                <i class="fa-solid fa-magnifying-glass absolute right-4 top-3.5 text-slate-500 text-sm"></i>
+                <input type="text" id="searchInput" oninput="renderJobs()" placeholder="ابحث عن وظيفة (شيف، كابتن، ويتر، باريستا) أو مطعم..." class="w-full bg-slate-900 border border-slate-800 rounded-2xl pr-11 pl-4 py-3 text-xs text-white focus:border-amber-500 outline-none">
+            </div>
+
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                <button onclick="setFilter('all')" id="filter-all" class="filter-btn bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition">الكل</button>
+                <button onclick="setFilter('fav')" id="filter-fav" class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition"><i class="fa-solid fa-heart text-rose-500 ml-1"></i> المفضلة</button>
+                <button onclick="setFilter('بغداد')" id="filter-بغداد" class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition">بغداد</button>
+                <button onclick="setFilter('البصرة')" id="filter-البصرة" class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition">البصرة</button>
+                <button onclick="setFilter('ذي قار')" id="filter-ذي قار" class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition">ذي قار</button>
+                <button onclick="setFilter('أربيل')" id="filter-أربيل" class="filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition">أربيل</button>
+            </div>
+        </div>
+
+        <!-- قائمة الوظائف -->
+        <div id="jobsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-3.5"></div>
+    </main>
+
+    <!-- نافذة التقديم السريع -->
+    <div id="applyModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <div>
+                    <h3 class="text-base font-black text-white">تقديم طلب توظيف</h3>
+                    <p id="applyJobTitleLabel" class="text-xs text-amber-400 font-semibold mt-0.5"></p>
+                </div>
+                <button onclick="closeApplyModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <form id="applyForm" onsubmit="submitApplication(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">الاسم الكامل:</label>
+                    <input type="text" id="applicantName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف للتواصل:</label>
+                    <input type="tel" id="applicantPhone" required dir="ltr" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white text-right outline-none focus:border-amber-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">نبذة مختصرة عن خبرتك:</label>
+                    <textarea id="applicantBio" rows="2" required placeholder="اكتب خبرتك السابقة في المطاعم أو مهاراتك..." class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white outline-none focus:border-amber-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">إرفاق السيرة الذاتية (CV) <span class="text-rose-400">*إجباري</span>:</label>
+                    <div id="cvUploadBox" onclick="document.getElementById('cvFileInput').click()" class="border-2 border-dashed border-slate-700 hover:border-amber-500 rounded-2xl p-4 text-center cursor-pointer transition bg-slate-950/50">
+                        <i class="fa-solid fa-file-arrow-up text-2xl text-amber-400 mb-1"></i>
+                        <p id="uploadedFileName" class="text-xs text-slate-300 font-semibold">اضغط لإرفاق السيرة الذاتية من الهاتف (PDF أو صورة)</p>
+                        <input type="file" id="cvFileInput" accept=".pdf,image/*,.doc,.docx" class="hidden" onchange="handleCVUpload(event)">
+                    </div>
+                    <p id="cvErrorMsg" class="hidden text-rose-400 text-[11px] font-bold mt-1.5"><i class="fa-solid fa-circle-exclamation ml-1"></i> يرجى إرفاق السيرة الذاتية (CV) أولاً قبل الإرسال!</p>
+                </div>
+
+                <button type="submit" class="w-full bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-3 rounded-xl text-xs transition shadow-lg">
+                    إرسال الطلب والسيرة الذاتية
+                </button>
+            </form>
+
+            <div class="pt-2 border-t border-slate-800 text-center">
+                <button type="button" id="modalWhatsAppBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs transition flex items-center justify-center gap-2 shadow-lg">
+                    <i class="fa-brands fa-whatsapp text-base"></i> أو تواصل مباشرة عبر واتساب بدون إرفاق CV
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- نافذة نشر وظيفة لصاحب المطعم -->
+    <div id="postJobModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white"><i class="fa-solid fa-plus-circle text-emerald-400 ml-1"></i> نشر وظيفة لمطعمي</h3>
+                <button onclick="closePostJobModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="publishNewJob(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">اسم المطعم:</label>
+                    <input type="text" id="postRestName" required placeholder="مثال: مطعم ومشويات الباشا" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">المسمى الوظيفي:</label>
+                        <input type="text" id="postJobTitle" required placeholder="مثال: شيف شرقي" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">المحافظة:</label>
+                        <select id="postJobCity" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                            <option value="بغداد">بغداد</option>
+                            <option value="البصرة">البصرة</option>
+                            <option value="ذي قار">ذي قار</option>
+                            <option value="أربيل">أربيل</option>
+                            <option value="النجف">النجف</option>
+                            <option value="كربلاء">كربلاء</option>
+                            <option value="نينوى">نينوى</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">العمر المطلوب:</label>
+                        <input type="text" id="postJobAge" required placeholder="مثال: 20 - 35 سنة" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-300 mb-1">الراتب:</label>
+                        <input type="text" id="postJobSalary" required placeholder="مثال: 750 ألف د.ع" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">الخبرة المطلوبة:</label>
+                    <input type="text" id="postJobExp" required placeholder="مثال: خبرة سنتين على الأقل" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">رقم هاتف / واتساب المطعم:</label>
+                    <input type="tel" id="postJobPhone" required dir="ltr" placeholder="07XXXXXXXXX" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white text-right outline-none focus:border-emerald-500">
+                </div>
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black py-3 rounded-xl text-xs transition shadow-lg">
+                    نشر الوظيفة الآن
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة عرض طلبات التوظيف المستلمة -->
+    <div id="applicationsModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white"><i class="fa-solid fa-inbox text-blue-400 ml-1"></i> طلبات التوظيف المستلمة</h3>
+                <button onclick="document.getElementById('applicationsModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="applicationsList" class="space-y-3"></div>
+        </div>
+    </div>
+
+    <!-- نافذة تعديل الحساب الشخصي -->
+    <div id="profileModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-sm w-full p-5 shadow-2xl space-y-4">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white">بيانات حسابي</h3>
+                <button onclick="document.getElementById('profileModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="updateProfile(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">الاسم الثلاثي:</label>
+                    <input type="text" id="editProfileName" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">رقم الهاتف:</label>
+                    <input type="tel" id="editProfilePhone" required dir="ltr" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white text-right outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-300 mb-1">نوع الحساب:</label>
+                    <select id="editProfileType" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none">
+                        <option value="seeker">باحث عن عمل</option>
+                        <option value="owner">صاحب مطعم</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-xs">حفظ التعديلات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- نافذة لوحة تحكم المشرف -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-xl w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-amber-400"><i class="fa-solid fa-shield-halved ml-1"></i> لوحة تحكم المشرف</h3>
+                <button onclick="document.getElementById('adminModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div id="adminLoginBox" class="space-y-3">
+                <p class="text-xs text-slate-400">أدخل كلمة مرور المشرف للوصول للإدارة:</p>
+                <input type="password" id="adminPassInput" placeholder="كلمة المرور" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-white outline-none">
+                <p id="adminPassError" class="hidden text-rose-400 text-xs font-bold">كلمة المرور غير صحيحة!</p>
+                <button onclick="checkAdminPass()" class="w-full bg-amber-500 text-slate-950 font-black py-2.5 rounded-xl text-xs">دخول الإدارة</button>
+            </div>
+
+            <div id="adminPanelContent" class="hidden space-y-5">
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                        <div id="statJobs" class="text-lg font-black text-amber-400">0</div>
+                        <div class="text-[10px] text-slate-400">الوظائف</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                        <div id="statUsers" class="text-lg font-black text-emerald-400">0</div>
+                        <div class="text-[10px] text-slate-400">المسجلين</div>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-2xl border border-slate-800">
+                        <div id="statApps" class="text-lg font-black text-blue-400">0</div>
+                        <div class="text-[10px] text-slate-400">الطلبات</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-black text-white mb-2">إدارة الوظائف المنشورة:</h4>
+                    <div id="adminJobsList" class="space-y-2 max-h-48 overflow-y-auto"></div>
+                </div>
+
+                <div>
+                    <h4 class="text-xs font-black text-white mb-2">العملاء المسجلين في التطبيق:</h4>
+                    <div id="adminUsersList" class="space-y-1.5 max-h-48 overflow-y-auto"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- إشعار منبثق (Toast) -->
+    <div id="toastMsg" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-slate-800 border border-slate-700 text-white text-xs font-bold px-5 py-3 rounded-2xl shadow-2xl z-[100] hidden transition-all"></div>
+
+    <!-- نافذة سجل الإشعارات وصلاحيات التنبيه -->
+    <div id="notificationsModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white"><i class="fa-solid fa-bell text-amber-400 ml-1"></i> إشعارات الوظائف الجديدة</h3>
+                <button onclick="document.getElementById('notificationsModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div id="permStatusBanner" class="bg-amber-500/10 border border-amber-500/30 rounded-2xl p-3 flex items-center justify-between gap-2">
+                <p class="text-[11px] text-amber-300 font-semibold">فعّل صلاحية الإشعارات ليصلك تنبيه فوري على هاتفك عند نشر أي وظيفة جديدة.</p>
+                <button onclick="enableBrowserNotifications()" class="bg-amber-500 text-slate-950 font-black text-[11px] px-3 py-1.5 rounded-xl whitespace-nowrap">تفعيل الصلاحية</button>
+            </div>
+            <div id="notificationsList" class="space-y-2.5"></div>
+        </div>
+    </div>
+
+    <!-- نافذة الإعدادات وتواصل معنا -->
+    <div id="settingsModal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-md w-full p-5 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                <h3 class="text-base font-black text-white"><i class="fa-solid fa-gear text-amber-400 ml-1.5"></i> الإعدادات والحساب</h3>
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- أزرار إدارة الحساب والمشرف -->
+            <div class="grid grid-cols-2 gap-2">
+                <button onclick="openProfileModal(); document.getElementById('settingsModal').classList.add('hidden');" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-2xl text-right transition flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-user"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-white">حسابي</h4>
+                        <p class="text-[9px] text-slate-400">تعديل البيانات</p>
+                    </div>
+                </button>
+
+                <button onclick="openAdminModal(); document.getElementById('settingsModal').classList.add('hidden');" class="bg-slate-950 hover:bg-slate-800 border border-slate-800 p-3 rounded-2xl text-right transition flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-xs">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-black text-white">لوحة المشرف</h4>
+                        <p class="text-[9px] text-slate-400">إدارة التطبيق</p>
+                    </div>
+                </button>
+            </div>
+
+            <!-- قسم تفعيل الإشعارات وسجل الإشعارات -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-400 flex items-center justify-center text-sm">
+                            <i class="fa-solid fa-bell"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-white">إشعارات الوظائف</h4>
+                            <p id="settingsNotifStatus" class="text-[10px] text-slate-400">تنبيهات فورية بالوظائف الجديدة</p>
+                        </div>
+                    </div>
+                    <button onclick="enableBrowserNotifications(); updateSettingsNotifStatus();" id="settingsNotifBtn" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black text-[11px] px-3.5 py-2 rounded-xl transition">
+                        تفعيل
+                    </button>
+                </div>
+                <button onclick="openNotificationsModal(); document.getElementById('settingsModal').classList.add('hidden');" class="w-full bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-200 text-xs font-bold py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-list-ul text-amber-400"></i> عرض سجل الإشعارات السابقة
+                </button>
+            </div>
+
+            <!-- قسم تواصل معنا -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3">
+                <h4 class="text-xs font-black text-amber-400 flex items-center gap-1.5">
+                    <i class="fa-solid fa-headset"></i> تواصل معنا (الدعم الفني والإدارة)
+                </h4>
+                <p class="text-[11px] text-slate-400">للاستفسارات، الإعلانات، أو الدعم الفني، يسعدنا تواصلكم المباشر معنا:</p>
+
+                <div class="space-y-2 pt-1">
+                    <!-- رقم الهاتف والواتساب -->
+                    <div class="flex items-center justify-between bg-slate-900 border border-slate-800/80 p-3 rounded-xl">
+                        <div>
+                            <span class="block text-[10px] text-slate-500">رقم الهاتف / واتساب:</span>
+                            <span class="text-xs font-bold text-white" dir="ltr">009647846396031</span>
+                        </div>
+                        <div class="flex gap-1.5">
+                            <a href="tel:009647846396031" class="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 flex items-center justify-center text-xs transition" title="اتصال مباشر">
+                                <i class="fa-solid fa-phone"></i>
+                            </a>
+                            <a href="https://wa.me/9647846396031" target="_blank" class="w-8 h-8 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white flex items-center justify-center text-sm transition" title="مراسلة واتساب">
+                                <i class="fa-brands fa-whatsapp"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- البريد الإلكتروني -->
+                    <div class="flex items-center justify-between bg-slate-900 border border-slate-800/80 p-3 rounded-xl">
+                        <div>
+                            <span class="block text-[10px] text-slate-500">البريد الإلكتروني:</span>
+                            <span class="text-xs font-bold text-white" dir="ltr">jobsiraq65@gmail.com</span>
+                        </div>
+                        <a href="mailto:jobsiraq65@gmail.com" class="w-8 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white flex items-center justify-center text-xs transition" title="إرسال بريد إلكتروني">
+                            <i class="fa-solid fa-envelope"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = JSON.parse(localStorage.getItem('restaurant_current_user')) || null;
+        let jobs = JSON.parse(localStorage.getItem('restaurant_jobs')) || [
+            { id: 1, restaurant: 'مطعم بغداد العراقي', title: 'شيف طبخ عام', city: 'بغداد', age: '25 - 45 سنة', salary: '1,000,000 د.ع', experience: '3 سنوات فما فوق', phone: '07800000000' },
+            { id: 2, restaurant: 'كافيه ومشويات الباشا', title: 'جرسون صالة', city: 'البصرة', age: '18 - 28 سنة', salary: '600,000 د.ع', experience: 'لا يشترط خبرة', phone: '07811111111' },
+            { id: 3, restaurant: 'مطعم دجلة والفرات', title: 'باريستا ومسؤول بار', city: 'بغداد', age: '20 - 32 سنة', salary: '750,000 د.ع', experience: 'سنة على الأقل', phone: '07822222222' }
+        ];
+        let users = JSON.parse(localStorage.getItem('restaurant_users')) || [];
+        let applications = JSON.parse(localStorage.getItem('restaurant_applications')) || [];
+        let favorites = JSON.parse(localStorage.getItem('restaurant_favorites')) || [];
+        let notifications = JSON.parse(localStorage.getItem('restaurant_notifications')) || [
+            { id: 1, title: 'مرحباً بك في المنصة', body: 'تصفح أحدث وظائف المطاعم في العراق وقدم بكل سهولة.', date: 'اليوم' }
+        ];
+
+        let currentFilter = 'all';
+        let selectedJobForApply = '';
+        let selectedJobRestaurant = '';
+        let selectedJobPhone = '';
+        let currentAttachedCV = null;
+
+        window.onload = function() {
+            setTimeout(() => {
+                const splash = document.getElementById('splashScreen');
+                if(splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => splash.remove(), 500);
+                }
+            }, 800);
+
+            if (!currentUser) {
+                document.getElementById('authModal').classList.remove('hidden');
+            } else {
+                updateUserUI();
+            }
+            renderJobs();
+            updateUnreadNotifBadge();
+            checkNotificationPermissionUI();
+        };
+
+        document.getElementById('authForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const name = document.getElementById('regName').value.trim();
+            const phone = document.getElementById('regPhone').value.trim();
+            const accountType = document.querySelector('input[name="accountType"]:checked').value;
+            const errorBox = document.getElementById('authError');
+
+            const nameParts = name.split(/\s+/);
+            if (nameParts.length < 3) {
+                errorBox.textContent = 'يرجى إدخال الاسم الثلاثي صحيحاً (ثلاث كلمات على الأقل)';
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            const phoneRegex = /^07[0-9]{9}$/;
+            if (!phoneRegex.test(phone)) {
+                errorBox.textContent = 'رقم الهاتف غير صحيح، يجب أن يكون 11 رقماً ويبدأ بـ 07';
+                errorBox.classList.remove('hidden');
+                return;
+            }
+
+            currentUser = { name, phone, type: accountType };
+            localStorage.setItem('restaurant_current_user', JSON.stringify(currentUser));
+
+            if (!users.some(u => u.phone === phone)) {
+                users.push({ name, phone, type: accountType, date: new Date().toLocaleString('ar-IQ') });
+                localStorage.setItem('restaurant_users', JSON.stringify(users));
+            }
+
+            document.getElementById('authModal').classList.add('hidden');
+            updateUserUI();
+            showToast('تم تسجيل الدخول بنجاح أهلاً بك!');
+            renderJobs();
+        });
+
+        function updateUserUI() {
+            if (!currentUser) return;
+            const badge = document.getElementById('userBadge');
+            badge.textContent = `${currentUser.name} (${currentUser.type === 'owner' ? 'صاحب مطعم' : 'باحث عن عمل'})`;
+
+            const postBtn = document.getElementById('ownerPostBtn');
+            const appsBtn = document.getElementById('ownerAppsBtn');
+            if (currentUser.type === 'owner') {
+                postBtn.classList.remove('hidden');
+                appsBtn.classList.remove('hidden');
+            } else {
+                postBtn.classList.add('hidden');
+                appsBtn.classList.add('hidden');
+            }
+        }
+
+        function setFilter(filter) {
+            currentFilter = filter;
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.className = 'filter-btn bg-slate-900 border border-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition';
+            });
+            const activeBtn = document.getElementById(`filter-${filter}`);
+            if (activeBtn) {
+                activeBtn.className = 'filter-btn bg-amber-500 text-slate-950 font-bold text-xs px-4 py-2 rounded-xl whitespace-nowrap transition';
+            }
+            renderJobs();
+        }
+
+        function toggleFavorite(id) {
+            const index = favorites.indexOf(id);
+            if (index > -1) {
+                favorites.splice(index, 1);
+                showToast('تمت الإزالة من المفضلة');
+            } else {
+                favorites.push(id);
+                showToast('تمت الإضافة للمفضلة ❤️');
+            }
+            localStorage.setItem('restaurant_favorites', JSON.stringify(favorites));
+            renderJobs();
+        }
+
+        function renderJobs() {
+            const container = document.getElementById('jobsContainer');
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            container.innerHTML = '';
+
+            let filtered = jobs.filter(j => 
+                j.title.toLowerCase().includes(search) || 
+                j.restaurant.toLowerCase().includes(search) || 
+                j.city.toLowerCase().includes(search)
+            );
+
+            if (currentFilter === 'fav') {
+                filtered = filtered.filter(j => favorites.includes(j.id));
+            } else if (currentFilter !== 'all') {
+                filtered = filtered.filter(j => j.city === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="col-span-full py-12 text-center text-slate-500 space-y-2">
+                        <i class="fa-solid fa-face-grimace text-3xl text-slate-600"></i>
+                        <p class="text-xs font-bold">لا توجد وظائف مطابقة للبحث حالياً.</p>
+                    </div>`;
+                return;
+            }
+
+            filtered.forEach(job => {
+                const isFav = favorites.includes(job.id);
+                const safeTitle = job.title.replace(/'/g, "\\'");
+                const safeRest = job.restaurant.replace(/'/g, "\\'");
+                const safePhone = job.phone || '07800000000';
+
+                container.innerHTML += `
+                    <div class="bg-slate-900 border border-slate-800/80 hover:border-slate-700 p-4 rounded-3xl space-y-3 transition shadow-md relative">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <span class="bg-amber-500/10 text-amber-400 text-[10px] font-black px-2.5 py-1 rounded-full border border-amber-500/20">${job.city}</span>
+                                <h3 class="font-black text-sm text-white mt-1.5">${job.title}</h3>
+                                <p class="text-xs text-slate-400 font-semibold"><i class="fa-solid fa-store ml-1 text-slate-500"></i>${job.restaurant}</p>
+                            </div>
+                            <button onclick="toggleFavorite(${job.id})" class="w-8 h-8 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-xs ${isFav ? 'text-rose-500 border-rose-500/40' : 'text-slate-400 hover:text-white'} transition">
+                                <i class="${isFav ? 'fa-solid' : 'fa-regular'} fa-heart"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-1.5 bg-slate-950 p-2.5 rounded-2xl border border-slate-800/60 text-center">
+                            <div>
+                                <span class="block text-[9px] text-slate-500">العمر</span>
+                                <span class="text-[11px] font-bold text-slate-200">${job.age}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] text-slate-500">الراتب</span>
+                                <span class="text-[11px] font-bold text-amber-400">${job.salary}</span>
+                            </div>
+                            <div>
+                                <span class="block text-[9px] text-slate-500">الخبرة</span>
+                                <span class="text-[11px] font-bold text-slate-200">${job.experience}</span>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-3 gap-2 pt-1">
+                            <button onclick="openApplyModal('${safeTitle}', '${safeRest}', '${safePhone}')" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-black py-2 rounded-xl text-xs transition shadow">
+                                <i class="fa-solid fa-paper-plane ml-1"></i> تقديم سريع
+                            </button>
+                            <a href="https://wa.me/964${safePhone.replace(/^0/, '')}?text=مرحباً، أود التقديم على وظيفة (${job.title}) في ${job.restaurant}" target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 shadow">
+                                <i class="fa-brands fa-whatsapp"></i> واتساب
+                            </a>
+                            <a href="tel:${safePhone}" class="bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1">
+                                <i class="fa-solid fa-phone text-emerald-400"></i> اتصال
+                            </a>
+                        </div>
+                    </div>`;
+            });
+        }
+
+        function openApplyModal(title, restaurant, phone) {
+            selectedJobForApply = title;
+            selectedJobRestaurant = restaurant;
+            selectedJobPhone = phone;
+            currentAttachedCV = null;
+
+            document.getElementById('applyJobTitleLabel.innerHTML') || (document.getElementById('applyJobTitleLabel').textContent = `${title} في ${restaurant}`);
+            document.getElementById('applicantName').value = currentUser ? currentUser.name : '';
+            document.getElementById('applicantPhone').value = currentUser ? currentUser.phone : '';
+            document.getElementById('applicantBio').value = '';
+            document.getElementById('uploadedFileName').textContent = 'اضغط لإرفاق السيرة الذاتية من الهاتف (PDF أو صورة)';
+            document.getElementById('cvErrorMsg').classList.add('hidden');
+
+            const waBtn = document.getElementById('modalWhatsAppBtn');
+            const cleanPhone = phone.replace(/^0/, '');
+            waBtn.onclick = function() {
+                window.open(`https://wa.me/964${cleanPhone}?text=مرحباً، أنا ${document.getElementById('applicantName').value || 'باحث عن عمل'}، أود التقديم على وظيفة (${title}) في ${restaurant}`, '_blank');
+            };
+
+            document.getElementById('applyModal').classList.remove('hidden');
+        }
+
+        function closeApplyModal() {
+            document.getElementById('applyModal').classList.add('hidden');
+        }
+
+        function handleCVUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                currentAttachedCV = file.name;
+                document.getElementById('uploadedFileName').textContent = `✅ تم إرفاق الملف: ${file.name}`;
+                document.getElementById('cvErrorMsg').classList.add('hidden');
+            }
+        }
+
+        function submitApplication(event) {
+            event.preventDefault();
+            if (!currentAttachedCV) {
+                document.getElementById('cvErrorMsg').classList.remove('hidden');
+                showToast('تنبيه: يجب إرفاق السيرة الذاتية (CV) أولاً!');
+                return;
+            }
+
+            const name = document.getElementById('applicantName').value;
+            const phone = document.getElementById('applicantPhone').value;
+            const bio = document.getElementById('applicantBio').value;
+
+            const newApp = {
+                id: Date.now(),
+                jobTitle: selectedJobForApply,
+                restaurant: selectedJobRestaurant,
+                applicantName: name,
+                applicantPhone: phone,
+                bio: bio,
+                cvName: currentAttachedCV,
+                date: new Date().toLocaleString('ar-IQ')
+            };
+
+            applications.push(newApp);
+            localStorage.setItem('restaurant_applications', JSON.stringify(applications));
+
+            closeApplyModal();
+            showToast('تم تقديم طلبك بنجاح لصاحب المطعم!');
+        }
+
+        function openPostJobModal() {
+            document.getElementById('postJobModal').classList.remove('hidden');
+        }
+        function closePostJobModal() {
+            document.getElementById('postJobModal').classList.add('hidden');
+        }
+
+        function publishNewJob(event) {
+            event.preventDefault();
+            const newJob = {
+                id: Date.now(),
+                restaurant: document.getElementById('postRestName').value,
+                title: document.getElementById('postJobTitle').value,
+                city: document.getElementById('postJobCity').value,
+                age: document.getElementById('postJobAge').value,
+                salary: document.getElementById('postJobSalary').value,
+                experience: document.getElementById('postJobExp').value,
+                phone: document.getElementById('postJobPhone').value
+            };
+
+            jobs.unshift(newJob);
+            localStorage.setItem('restaurant_jobs', JSON.stringify(jobs));
+
+            const notif = {
+                id: Date.now(),
+                title: `وظيفة جديدة: ${newJob.title}`,
+                body: `أعلن (${newJob.restaurant}) في ${newJob.city} عن شاغر براتب ${newJob.salary}. قدم الآن!`,
+                date: 'الآن'
+            };
+            notifications.unshift(notif);
+            localStorage.setItem('restaurant_notifications', JSON.stringify(notifications));
+
+            sendDeviceNotification(notif.title, notif.body);
+            updateUnreadNotifBadge();
+
+            closePostJobModal();
+            renderJobs();
+            showToast('تم نشر الوظيفة بنجاح وإرسال إشعارات للعملاء!');
+        }
+
+        function openApplicationsModal() {
+            const list = document.getElementById('applicationsList');
+            list.innerHTML = '';
+
+            const myRestaurantJobs = jobs; // يمكنك تصفيتها حسب مطعم المستخدم الحالي
+            const receivedApps = applications.filter(a => currentUser && currentUser.type === 'owner');
+
+            if (receivedApps.length === 0) {
+                list.innerHTML = '<p class="text-center text-slate-500 text-xs py-8">لا توجد طلبات توظيف مستلمة حتى الآن.</p>';
+            } else {
+                receivedApps.forEach(app => {
+                    const cleanPhone = app.applicantPhone.replace(/^0/, '');
+                    list.innerHTML += `
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-2xl space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h4 class="font-black text-xs text-amber-400">${app.applicantName}</h4>
+                                    <span class="text-[10px] text-slate-400">متقدم على: ${app.jobTitle} (${app.restaurant})</span>
+                                </div>
+                                <span class="text-[9px] text-slate-500">${app.date}</span>
+                            </div>
+                            <p class="text-xs text-slate-300 bg-slate-900 p-2.5 rounded-xl border border-slate-800/80"><strong>النبذة:</strong> ${app.bio}</p>
+                            <div class="flex items-center justify-between pt-1">
+                                <span class="text-xs font-bold text-emerald-400"><i class="fa-solid fa-file-pdf ml-1"></i> ${app.cvName}</span>
+                                <div class="flex gap-1.5">
+                                    <a href="tel:${app.applicantPhone}" class="bg-slate-800 hover:bg-slate-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fa-solid fa-phone text-emerald-400 ml-1"></i> اتصال</a>
+                                    <a href="https://wa.me/964${cleanPhone}?text=مرحباً ${app.applicantName}، بخصوص طلبك لوظيفة ${app.jobTitle}..." target="_blank" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold"><i class="fa-brands fa-whatsapp ml-1"></i> واتساب</a>
+                                </div>
+                            </div>
+                        </div>`;
+                });
+            }
+            document.getElementById('applicationsModal').classList.remove('hidden');
+        }
+
+        function openProfileModal() {
+            if (!currentUser) return;
+            document.getElementById('editProfileName').value = currentUser.name;
+            document.getElementById('editProfilePhone').value = currentUser.phone;
+            document.getElementById('editProfileType').value = currentUser.type;
+            document.getElementById('profileModal').classList.remove('hidden');
+        }
+
+        function updateProfile(e) {
+            e.preventDefault();
+            currentUser.name = document.getElementById('editProfileName').value;
+            currentUser.phone = document.getElementById('editProfilePhone').value;
+            currentUser.type = document.getElementById('editProfileType').value;
+
+            localStorage.setItem('restaurant_current_user', JSON.stringify(currentUser));
+            updateUserUI();
+            document.getElementById('profileModal').classList.add('hidden');
+            showToast('تم تحديث بيانات الحساب بنجاح');
+            renderJobs();
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+        }
+
+        function checkAdminPass() {
+            const pass = document.getElementById('adminPassInput').value;
+            if (pass === 'Mohamad@issa70') {
+                document.getElementById('adminLoginBox').classList.add('hidden');
+                document.getElementById('adminPanelContent').classList.remove('hidden');
+                renderAdminStats();
+            } else {
+                document.getElementById('adminPassError').classList.remove('hidden');
+            }
+        }
+
+        function renderAdminStats() {
+            document.getElementById('statJobs').textContent = jobs.length;
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statApps').textContent = applications.length;
+
+            const jobsList = document.getElementById('adminJobsList');
+            jobsList.innerHTML = '';
+            jobs.forEach(j => {
+                jobsList.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-950 p-2.5 rounded-xl border border-slate-800 text-xs">
+                        <div>
+                            <span class="font-bold text-white">${j.title}</span> <span class="text-slate-400">(${j.restaurant})</span>
+                        </div>
+                        <button onclick="deleteJobAdmin(${j.id})" class="bg-rose-500/20 hover:bg-rose-500 text-rose-400 hover:text-white px-2.5 py-1 rounded-lg text-[10px] font-bold transition">حذف</button>
+                    </div>`;
+            });
+
+            const usersList = document.getElementById('adminUsersList');
+            usersList.innerHTML = '';
+            users.forEach(u => {
+                usersList.innerHTML += `
+                    <div class="flex justify-between items-center bg-slate-950 p-2 rounded-xl border border-slate-800 text-xs">
+                        <div>
+                            <span class="font-bold text-white">${u.name}</span> <span class="text-slate-400" dir="ltr">(${u.phone})</span>
+                        </div>
+                        <span class="text-[10px] text-amber-400">${u.type === 'owner' ? 'صاحب مطعم' : 'باحث'}</span>
+                    </div>`;
+            });
+        }
+
+        function deleteJobAdmin(id) {
+            jobs = jobs.filter(j => j.id !== id);
+            localStorage.setItem('restaurant_jobs', JSON.stringify(jobs));
+            renderAdminStats();
+            renderJobs();
+            showToast('تم حذف الوظيفة بنجاح');
+        }
+
+        function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                showToast('متصفحك لا يدعم إشعارات النظام');
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    showToast('✅ تم تفعيل إشعارات التطبيق بنجاح!');
+                    checkNotificationPermissionUI();
+                } else {
+                    showToast('تم رفض إذن الإشعارات');
+                }
+            });
+        }
+
+        function enableBrowserNotifications() {
+            requestNotificationPermission();
+        }
+
+        function checkNotificationPermissionUI() {
+            const banner = document.getElementById('permStatusBanner');
+            if (!banner) return;
+            if ('Notification' in window && Notification.permission === 'granted') {
+                banner.classList.add('hidden');
+            } else {
+                banner.classList.remove('hidden');
+            }
+            updateSettingsNotifStatus();
+        }
+
+        function openSettingsModal() {
+            updateSettingsNotifStatus();
+            document.getElementById('settingsModal').classList.remove('hidden');
+        }
+
+        function updateSettingsNotifStatus() {
+            const statusText = document.getElementById('settingsNotifStatus');
+            const btn = document.getElementById('settingsNotifBtn');
+            if (!statusText || !btn) return;
+            if ('Notification' in window && Notification.permission === 'granted') {
+                statusText.textContent = '✅ الإشعارات مفعّلة وتعمل بنجاح';
+                statusText.classList.replace('text-slate-400', 'text-emerald-400');
+                btn.textContent = 'مفعّل';
+                btn.classList.remove('bg-amber-500', 'hover:bg-amber-400', 'text-slate-950');
+                btn.classList.add('bg-emerald-600/20', 'text-emerald-400', 'border', 'border-emerald-500/30');
+            } else {
+                statusText.textContent = 'استلام تنبيهات فورية بالوظائف الجديدة';
+                statusText.classList.replace('text-emerald-400', 'text-slate-400');
+                btn.textContent = 'تفعيل الآن';
+                btn.classList.add('bg-amber-500', 'hover:bg-amber-400', 'text-slate-950');
+                btn.classList.remove('bg-emerald-600/20', 'text-emerald-400', 'border', 'border-emerald-500/30');
+            }
+        }
+
+        function sendDeviceNotification(title, body) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                    new Notification(title, {
+                        body: body,
+                        icon: 'https://placehold.co/128x128/f59e0b/0f172a?text=وظائف'
+                    });
+                } catch(e) {
+                    console.error(e);
+                }
+            }
+        }
+
+        function updateUnreadNotifBadge() {
+            const badge = document.getElementById('notifBadge');
+            if (notifications.length > 0) {
+                badge.textContent = notifications.length;
+                badge.classList.remove('hidden');
+            } else {
+                badge.classList.add('hidden');
+            }
+        }
+
+        function openNotificationsModal() {
+            const list = document.getElementById('notificationsList');
+            list.innerHTML = '';
+            notifications.forEach(n => {
+                list.innerHTML += `
+                    <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-2xl space-y-1">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-black text-xs text-amber-400">${n.title}</h4>
+                            <span class="text-[9px] text-slate-500">${n.date}</span>
+                        </div>
+                        <p class="text-[11px] text-slate-300">${n.body}</p>
+                    </div>`;
+            });
+            document.getElementById('notificationsModal').classList.remove('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toastMsg');
+            toast.textContent = msg;
+            toast.classList.remove('hidden');
+            setTimeout(() => {
+                toast.classList.add('hidden');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
