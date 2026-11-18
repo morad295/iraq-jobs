@@ -465,7 +465,6 @@
             registerAppServiceWorker();
         };
 
-        // تسجيل Service Worker وتفعيل الإشعارات في متصفح كروم والجوال
         function registerAppServiceWorker() {
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.register('sw.js')
